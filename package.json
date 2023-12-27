@@ -1,6 +1,6 @@
 {
   "name": "ct-azure-openai-gpt4-chat",
-  "version": "0.16.5",
+  "version": "0.16.6",
   "description": "A Next.js chat app that uses Azure OpenAI GPT-4 to generate responses",
   "private": true,
   "engines": {
@@ -31,7 +31,7 @@
     "@fortawesome/free-solid-svg-icons": "6.5.1",
     "@fortawesome/react-fontawesome": "0.2.0",
     "ai": "2.2.30",
-    "axios": "1.6.2",
+    "axios": "1.6.3",
     "daisyui": "4.4.24",
     "dayjs": "1.11.10",
     "he": "1.2.0",
