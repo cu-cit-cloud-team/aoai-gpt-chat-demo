@@ -1,6 +1,6 @@
 {
   "name": "ct-azure-openai-gpt4-chat",
-  "version": "0.18.3",
+  "version": "0.18.4",
   "description": "A Next.js chat app that uses Azure OpenAI GPT-4 to generate responses",
   "private": true,
   "engines": {
@@ -8,7 +8,7 @@
     "npm": ">= 10.x"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "changelog": "conventional-changelog -i CHANGELOG.md -s && git add CHANGELOG.md",
     "start": "next start",
@@ -30,8 +30,8 @@
     "@fortawesome/free-brands-svg-icons": "6.5.1",
     "@fortawesome/free-solid-svg-icons": "6.5.1",
     "@fortawesome/react-fontawesome": "0.2.0",
-    "@langchain/community": "0.0.18",
-    "@langchain/core": "0.1.16",
+    "@langchain/community": "0.0.19",
+    "@langchain/core": "0.1.17",
     "@langchain/openai": "0.0.12",
     "ai": "2.2.31",
     "axios": "1.6.5",
@@ -39,11 +39,11 @@
     "dayjs": "1.11.10",
     "he": "1.2.0",
     "js-tiktoken": "1.0.8",
-    "langchain": "0.1.4",
+    "langchain": "0.1.5",
     "marked": "11.1.1",
     "nanoid": "5.0.4",
     "next": "14.1.0",
-    "openai": "4.24.7",
+    "openai": "4.25.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-markdown": "9.0.1",
@@ -52,7 +52,7 @@
     "uuid": "9.0.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.5.2",
+    "@biomejs/biome": "1.5.3",
     "@fullhuman/postcss-purgecss": "5.0.0",
     "@tailwindcss/forms": "0.5.7",
     "@tailwindcss/typography": "0.5.10",
