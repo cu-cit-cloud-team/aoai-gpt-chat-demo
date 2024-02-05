@@ -3,6 +3,7 @@
 import { useChat } from 'ai/react';
 import axios from 'axios';
 import { useEffect, useRef } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import useLocalStorageState from 'use-local-storage-state';
 
 import { Footer } from './components/Footer.tsx';
@@ -24,22 +25,23 @@ export default function Chat() {
       await axios
         .get('/.auth/me')
         .then((response) => {
-          // console.log(response.data);
-
-          const email = response.data[0].user_claims.find(
+          const email = response?.data[0]?.user_claims.find(
             (item) => item.typ === 'preferred_username'
           ).val;
 
-          const name = response.data[0].user_claims.find(
+          const name = response?.data[0]?.user_claims.find(
             (item) => item.typ === 'name'
           ).val;
 
-          const user_id = response.data[0].user_id;
+          const user_id = response?.data[0]?.user_id;
+
+          const expires_on = response?.data[0]?.expires_on;
 
           setUserMeta({
             email,
             name,
             user_id,
+            expires_on,
           });
         })
         // biome-ignore lint/correctness/noUnusedVariables: used for debugging
@@ -75,6 +77,7 @@ export default function Chat() {
 
   const handleChatError = (error) => {
     console.error(error);
+    throw error;
   };
 
   const {
@@ -180,33 +183,58 @@ export default function Chat() {
     };
   }, [textareaElement, submitForm]);
 
+  const ErrorFallback = ({ error, resetErrorBoundary }) => {
+    return (
+      <dialog className="modal modal-bottom sm:modal-middle errorModal">
+        <div className="w-11/12 max-w-5xl modal-box bg-error-content">
+          <h3 className="text-lg font-bold text-error">Error</h3>
+          <p className="py-4 text-error">{error?.message}</p>
+          <div className="modal-action">
+            <button
+              type="button"
+              className="btn btnReload text-error-content btn-error"
+              onClick={() => {
+                // resetErrorBoundary();
+                window.location.reload();
+              }}
+            >
+              Reload and try again
+            </button>
+          </div>
+        </div>
+      </dialog>
+    );
+  };
+
   return (
     <>
-      <Header
-        isLoading={isLoading}
-        systemMessage={systemMessage}
-        setSystemMessage={setSystemMessage}
-        systemMessageRef={systemMessageRef}
-        input={input}
-        userMeta={userMeta}
-      />
-      <Messages
-        isLoading={isLoading}
-        messages={messages}
-        userMeta={userMeta}
-        savedMessages={savedMessages}
-        error={error}
-        reload={reload}
-        stop={stop}
-      />
-      <Footer
-        formRef={formRef}
-        systemMessageRef={systemMessageRef}
-        textAreaRef={textAreaRef}
-        handleSubmit={handleSubmit}
-        input={input}
-        handleInputChange={handleInputChange}
-      />
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <Header
+          isLoading={isLoading}
+          systemMessage={systemMessage}
+          setSystemMessage={setSystemMessage}
+          systemMessageRef={systemMessageRef}
+          input={input}
+          userMeta={userMeta}
+        />
+        <Messages
+          isLoading={isLoading}
+          messages={messages}
+          userMeta={userMeta}
+          savedMessages={savedMessages}
+          error={error}
+          reload={reload}
+          stop={stop}
+        />
+        <Footer
+          formRef={formRef}
+          systemMessageRef={systemMessageRef}
+          textAreaRef={textAreaRef}
+          handleSubmit={handleSubmit}
+          input={input}
+          handleInputChange={handleInputChange}
+        />
+      </ErrorBoundary>
     </>
   );
 }
