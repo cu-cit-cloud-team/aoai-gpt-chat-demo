@@ -73,28 +73,42 @@ export default function Chat() {
     },
   });
 
-  // useEffect(() => {
-  //   const isSessionStale = () => {
-  //     if (userMeta?.expires_on) {
-  //       const expiresOn = dayjs(userMeta.expires_on);
-  //       const now = dayjs();
-  //       if (now.isAfter(expiresOn)) {
-  //         return true;
-  //       }
-  //     }
-  //     return false;
-  //   };
+  useEffect(() => {
+    const isSessionStale = () => {
+      if (userMeta?.expires_on) {
+        const expiresOn = dayjs(userMeta.expires_on);
+        const now = dayjs();
+        if (now.isAfter(expiresOn)) {
+          return true;
+        }
+      }
+      return false;
+    };
 
-  //   const sessionTimer = setTimeout(() => {
-  //     if (isSessionStale()) {
-  //       clearTimeout(sessionTimer);
-  //       const sessionModal = document.querySelector('.sessionModal');
-  //       sessionModal.showModal();
-  //     }
-  //   }, 1000);
+    const refreshSession = async () => {
+      await axios
+        .get('/.auth/refresh')
+        .then((response) => {
+          console.log(response.data);
+          const expires_on = response?.data[0]?.expires_on;
+          setUserMeta({ ...userMeta, expires_on });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    };
 
-  //   return () => clearTimeout(sessionTimer);
-  // }, [userMeta]);
+    const sessionTimer = setTimeout(() => {
+      if (isSessionStale()) {
+        refreshSession();
+        clearTimeout(sessionTimer);
+        const sessionModal = document.querySelector('.sessionModal');
+        sessionModal.showModal();
+      }
+    }, 1000);
+
+    return () => clearTimeout(sessionTimer);
+  }, [userMeta, setUserMeta]);
 
   const [savedMessages] = useLocalStorageState('messages', {
     defaultValue: [],
