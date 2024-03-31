@@ -1,6 +1,6 @@
 {
   "name": "ct-azure-openai-gpt4-chat",
-  "version": "0.25.1",
+  "version": "0.26.1",
   "description": "A Next.js chat app that uses Azure OpenAI GPT-4 to generate responses",
   "private": true,
   "engines": {
@@ -11,7 +11,7 @@
     "biome": "biome check ./app",
     "build": "next build",
     "changelog": "conventional-changelog -i CHANGELOG.md -s && git add CHANGELOG.md",
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbo -p 3001",
     "lint": "next lint",
     "start": "next start",
     "version": "npm run changelog"
@@ -33,9 +33,9 @@
     "@fortawesome/free-solid-svg-icons": "6.5.1",
     "@fortawesome/react-fontawesome": "0.2.0",
     "@langchain/community": "0.0.43",
-    "@langchain/core": "0.1.51",
-    "@langchain/openai": "0.0.23",
-    "ai": "3.0.14",
+    "@langchain/core": "0.1.52",
+    "@langchain/openai": "0.0.25",
+    "ai": "3.0.16",
     "axios": "1.6.8",
     "daisyui": "4.9.0",
     "dayjs": "1.11.10",
@@ -47,7 +47,7 @@
     "marked": "12.0.1",
     "nanoid": "5.0.6",
     "next": "14.1.4",
-    "openai": "4.29.2",
+    "openai": "4.31.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-error-boundary": "4.0.13",
@@ -59,19 +59,19 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.6.3",
-    "@fullhuman/postcss-purgecss": "5.0.0",
+    "@fullhuman/postcss-purgecss": "6.0.0",
     "@tailwindcss/forms": "0.5.7",
-    "@tailwindcss/typography": "0.5.11",
-    "@types/node": "20.11.30",
-    "@types/react": "18.2.72",
-    "@types/react-dom": "18.2.22",
+    "@tailwindcss/typography": "0.5.12",
+    "@types/node": "20.12.2",
+    "@types/react": "18.2.73",
+    "@types/react-dom": "18.2.23",
     "@types/react-syntax-highlighter": "15.5.11",
     "autoprefixer": "10.4.19",
     "conventional-changelog": "5.1.0",
     "conventional-changelog-cli": "4.1.0",
     "conventional-changelog-conventionalcommits": "7.0.2",
     "cssnano": "6.1.2",
-    "cz-git": "1.9.0",
+    "cz-git": "1.9.1",
     "eslint": "8.57.0",
     "eslint-config-next": "14.1.4",
     "postcss": "8.4.38",
@@ -80,7 +80,7 @@
     "stylelint": "16.3.1",
     "stylelint-config-standard": "36.0.0",
     "stylelint-config-standard-scss": "13.0.0",
-    "tailwindcss": "3.4.1",
+    "tailwindcss": "3.4.3",
     "typescript": "5.4.3"
   },
   "browserslist": {
@@ -104,7 +104,7 @@
     "preset": "conventionalcommits"
   },
   "volta": {
-    "node": "20.11.1",
+    "node": "20.12.0",
     "npm": "10.5.0"
   }
 }
