@@ -22,7 +22,7 @@ concurrency:
 
 env:
   NODE_VERSION: "20"
-  AZURE_WEBAPP_NAME: "ct-azure-openai-gpt4-chat"
+  AZURE_WEBAPP_NAME: "ct-aoai-got-chat-demo"
   AZURE_WEBAPP_PACKAGE_PATH: "."
   AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
   AZURE_OPENAI_BASE_PATH: ${{ secrets.AZURE_OPENAI_BASE_PATH }}}
