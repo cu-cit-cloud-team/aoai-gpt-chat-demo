@@ -26,11 +26,12 @@ export const App = () => {
       try {
         const messages = getItem('messages');
         if (messages) {
-          for await (const message of messages) {
-            // messagesTable.put(message);
-            await database.messages.add(message);
-          }
-          removeItem('messages');
+          await database.transaction('rw', database.messages, async () => {
+            for await (const message of messages) {
+              await database.messages.add(message);
+            }
+            removeItem('messages');
+          });
         }
       } catch (error) {
         console.error(error);
@@ -105,16 +106,17 @@ export const App = () => {
 
   const [savedMessages, setSavedMessages] = useState([]);
 
-  const dbMessages = useLiveQuery(
-    () => database.messages.toArray(),
-    [database.messages]
-  );
+  const dbMessages = useLiveQuery(async () => {
+    let messages = await database.messages.toArray();
+    messages = messages.sort(
+      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+    );
+    return messages;
+  }, [database.messages]);
 
   useEffect(() => {
-    if (dbMessages) {
-      setSavedMessages(
-        dbMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-      );
+    if (dbMessages?.length) {
+      setSavedMessages(dbMessages);
     }
   }, [dbMessages]);
 
@@ -151,10 +153,13 @@ export const App = () => {
 
   // update indexedDB when messages changes
   useEffect(() => {
+    const addMessage = async (message) => {
+      await database.messages.add(message);
+    };
+
     if (messages?.length !== savedMessages?.length) {
       if (messages[messages.length - 1].role === 'user' || !isLoading) {
-        // messagesTable.put(messages[messages.length - 1]);
-        database.messages.add(messages[messages.length - 1]);
+        addMessage(messages[messages.length - 1]);
       }
     }
   }, [messages, savedMessages, isLoading]);
@@ -199,10 +204,6 @@ export const App = () => {
   const clearHistory = useCallback(async (doConfirm = true) => {
     const clearMessages = async () => {
       try {
-        // const messages = await database.messages.toArray();
-        // for await (const message of messages) {
-        //   database.messages.delete(message.id);
-        // }
         await database.messages.clear();
       } catch (error) {
         console.error(error);
