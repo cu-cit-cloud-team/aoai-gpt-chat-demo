@@ -151,6 +151,7 @@ export const Header = memo(
             </li>
           </ul>
         </div>
+
         <div className="navbar-end">
           <UserAvatar userMeta={userMeta} />
         </div>
