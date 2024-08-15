@@ -9,6 +9,8 @@ const {
   AZURE_OPENAI_MODEL_DEPLOYMENT,
   AZURE_OPENAI_GPT4_DEPLOYMENT,
   AZURE_OPENAI_GPT35_DEPLOYMENT,
+  AZURE_OPENAI_GPT4O_DEPLOYMENT,
+  AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT,
   AZURE_OPENAI_API_VERSION,
   AZURE_AI_SEARCH_KEY,
   AZURE_AI_SEARCH_ENDPOINT,
@@ -36,7 +38,7 @@ const defaults = {
   frequency_penalty: 0, // -2.0 to 2.0
   presence_penalty: 0, // -2.0 to 2.0
   max_tokens: 1024,
-  model: 'gpt-4-turbo', // currently gpt-4-turbo, gpt-4, or gpt-35-turbo
+  model: 'gpt-4o', // currently gpt-4o, gpt-4-turbo, gpt-4, or gpt-35-turbo
   user: 'Cloud Team GPT Chat User',
 };
 
@@ -113,7 +115,13 @@ export async function POST(req: Request) {
       ? AZURE_OPENAI_GPT35_DEPLOYMENT
       : model === 'gpt-4' && AZURE_OPENAI_GPT4_DEPLOYMENT
         ? AZURE_OPENAI_GPT4_DEPLOYMENT
-        : AZURE_OPENAI_MODEL_DEPLOYMENT;
+        : model === 'gpt-4-turbo' && AZURE_OPENAI_MODEL_DEPLOYMENT
+          ? AZURE_OPENAI_MODEL_DEPLOYMENT
+          : model === 'gpt-4o' && AZURE_OPENAI_GPT4O_DEPLOYMENT
+            ? AZURE_OPENAI_GPT4O_DEPLOYMENT
+            : model === 'gpt-4o-mini' && AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT
+              ? AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT
+              : AZURE_OPENAI_GPT4O_DEPLOYMENT;
 
   // instantiate the OpenAI client
   // const openai = new OpenAI({
