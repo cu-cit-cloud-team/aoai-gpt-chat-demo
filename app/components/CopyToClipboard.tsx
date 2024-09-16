@@ -6,9 +6,12 @@ import { nanoid } from 'nanoid';
 import { memo, useCallback } from 'react';
 
 export const CopyToClipboard = memo(({ isUser, textToCopy }) => {
+  const inputIdKey = nanoid();
+  const buttonIdKey = nanoid();
+
   const isCopiedAtom = atom(false);
-  const inputIdAtom = atom(() => nanoid());
-  const buttonIdAtom = atom(() => nanoid());
+  const inputIdAtom = atom(inputIdKey);
+  const buttonIdAtom = atom(buttonIdKey);
 
   const [isCopied, setIsCopied] = useAtom(isCopiedAtom);
   const inputId = useAtomValue(inputIdAtom);
@@ -61,12 +64,11 @@ export const CopyToClipboard = memo(({ isUser, textToCopy }) => {
           'btn-secondary text-secondary-content': !isUser,
         })}
       >
-        <FontAwesomeIcon
-          icon={isCopied ? faCheck : faCopy}
-          className={clsx('', {
-            'text-green-600': isCopied,
-          })}
-        />
+        {isCopied ? (
+          <FontAwesomeIcon icon={faCheck} className="text-green-600" />
+        ) : (
+          <FontAwesomeIcon icon={faCopy} />
+        )}
       </button>
     </div>
   );

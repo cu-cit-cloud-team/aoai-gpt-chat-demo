@@ -5,7 +5,7 @@ import { useAtomValue } from 'jotai';
 import markdownToTxt from 'markdown-to-txt';
 import { nanoid } from 'nanoid';
 import PropTypes from 'prop-types';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import Markdown from 'react-markdown';
 import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import rehypeKatex from 'rehype-katex';
@@ -26,20 +26,54 @@ import { ReloadMessage } from '@/app/components/ReloadMessage';
 import { editorThemeAtom } from '@/app/components/ThemeChanger';
 
 export const ChatBubble = memo(
-  ({ index, isLoading, isUser, message, reload, stop, totalMessages }) => {
+  ({
+    index,
+    isLoading,
+    isUser,
+    messageContent,
+    messageCreatedAt,
+    messageId,
+    reload,
+    stop,
+    totalMessages,
+  }) => {
     const editorTheme = useAtomValue(editorThemeAtom);
+    const copyToClipBoardKey = nanoid();
+    const preCopyToClipBoardKey = nanoid();
 
     const Pre = ({ children }) => {
       return (
         <pre className="code-pre">
           <CopyToClipboard
-            key={nanoid()}
+            key={preCopyToClipBoardKey}
             textToCopy={children.props.children}
           />
           {children}
         </pre>
       );
     };
+
+    const rehypePlugins = useMemo(
+      () => [rehypeKatex, rehypeSanitize, rehypeStringify],
+      []
+    );
+
+    const remarkPlugins = useMemo(
+      () => [remarkGfm, remarkMath, remarkParse, remarkRehype],
+      []
+    );
+
+    const bubbleIcon = useMemo(() => {
+      return isUser
+        ? faUser
+        : isLoading && index === totalMessages
+          ? faSpinner
+          : faRobot;
+    }, [index, isLoading, isUser, totalMessages]);
+
+    const bubbleIconSpinPulse = useMemo(() => {
+      return !isUser && isLoading && index === totalMessages;
+    }, [index, isLoading, isUser, totalMessages]);
 
     return (
       <div
@@ -58,14 +92,8 @@ export const ChatBubble = memo(
             <FontAwesomeIcon
               className="chat-avatar-icon"
               size="2x"
-              icon={
-                isUser
-                  ? faUser
-                  : isLoading && index === totalMessages
-                    ? faSpinner
-                    : faRobot
-              }
-              spinPulse={!isUser && isLoading && index === totalMessages}
+              icon={bubbleIcon}
+              spinPulse={bubbleIconSpinPulse}
               fixedWidth
             />
           </div>
@@ -79,23 +107,23 @@ export const ChatBubble = memo(
           {(isUser || !isLoading || index !== totalMessages) && (
             <>
               <CopyToClipboard
-                key={nanoid()}
+                key={copyToClipBoardKey}
                 isUser={isUser}
-                textToCopy={markdownToTxt(message.content)}
+                textToCopy={markdownToTxt(messageContent)}
               />
-              <DeleteMessage isUser={isUser} message={message} />
+              <DeleteMessage isUser={isUser} messageId={messageId} />
               {index === totalMessages ? (
                 <ReloadMessage
                   isUser={isUser}
                   reload={reload}
-                  message={message}
+                  messageId={messageId}
                 />
               ) : null}
             </>
           )}
           <Markdown
-            rehypePlugins={[rehypeKatex, rehypeSanitize, rehypeStringify]}
-            remarkPlugins={[remarkGfm, remarkMath, remarkParse, remarkRehype]}
+            rehypePlugins={rehypePlugins}
+            remarkPlugins={remarkPlugins}
             components={{
               pre: Pre,
               code(props) {
@@ -124,7 +152,7 @@ export const ChatBubble = memo(
               },
             }}
           >
-            {message.content.replace(/\n/g, '  \n')}
+            {messageContent.replace(/\n/g, '  \n')}
           </Markdown>
         </div>
         <div
@@ -136,7 +164,7 @@ export const ChatBubble = memo(
             index={index}
             isLoading={isLoading}
             isUser={isUser}
-            message={message}
+            messageCreatedAt={messageCreatedAt}
             stop={stop}
             totalMessages={totalMessages}
           />

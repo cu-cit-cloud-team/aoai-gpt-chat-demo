@@ -40,11 +40,13 @@ export const Messages = memo(
             ? messages.map((m, idx) => {
                 return (
                   <ChatBubble
-                    key={nanoid()}
+                    key={m.id}
                     index={idx}
                     isLoading={isLoading}
                     isUser={m.role === 'user'}
-                    message={m}
+                    messageCreatedAt={m.createdAt}
+                    messageContent={m.content}
+                    messageId={m.id}
                     reload={reload}
                     stop={stop}
                     totalMessages={messages.length - 1}
