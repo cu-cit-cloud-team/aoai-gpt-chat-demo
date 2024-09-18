@@ -12,6 +12,7 @@
     "build": "next build",
     "changelog": "conventional-changelog -i CHANGELOG.md -s && git add CHANGELOG.md",
     "dev": "next dev -p 3001",
+    "dev:million": "MILLION_LINT=true next dev -p 3001",
     "lint": "next lint",
     "start": "next start",
     "version": "npm run changelog"
@@ -27,16 +28,16 @@
   "homepage": "https://github.com/cu-cit-cloud-team/azure-openai-gpt4-chat",
   "license": "MIT",
   "dependencies": {
-    "@azure/openai": "1.0.0-beta.12",
+    "@azure/openai": "1.0.0-beta.13",
     "@fortawesome/fontawesome-svg-core": "6.6.0",
     "@fortawesome/free-brands-svg-icons": "6.6.0",
     "@fortawesome/free-solid-svg-icons": "6.6.0",
     "@fortawesome/react-fontawesome": "0.2.2",
     "@langchain/community": "0.3.1",
-    "@langchain/core": "0.3.1",
+    "@langchain/core": "0.3.2",
     "@langchain/openai": "0.3.0",
     "@million/lint": "1.0.0-rc.84",
-    "ai": "3.3.40",
+    "ai": "3.3.41",
     "axios": "1.7.7",
     "babel-plugin-react-compiler": "0.0.0-experimental-ca8e0be-20240916",
     "clsx": "2.1.1",
@@ -52,7 +53,7 @@
     "nanoid": "5.0.7",
     "next": "15.0.0-rc.0",
     "next-themes": "0.3.0",
-    "openai": "4.61.1",
+    "openai": "4.62.0",
     "react": "19.0.0-rc.0",
     "react-dom": "19.0.0-rc.0",
     "react-error-boundary": "4.0.13",
@@ -85,14 +86,14 @@
     "cssnano": "7.0.6",
     "cz-git": "1.9.4",
     "eslint": "8.57.1",
-    "eslint-config-next": "14.2.11",
+    "eslint-config-next": "15.0.0-rc.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-react-compiler": "0.0.0",
     "postcss": "8.4.47",
     "postcss-cli": "11.0.0",
     "prettier": "3.3.3",
     "prop-types": "15.8.1",
-    "sass": "1.78.0",
+    "sass": "1.79.1",
     "stylelint": "16.9.0",
     "stylelint-config-standard": "36.0.1",
     "stylelint-config-standard-scss": "13.1.0",
@@ -103,7 +104,11 @@
     "lodash": "4.17.21"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
@@ -120,6 +125,6 @@
   },
   "volta": {
     "node": "20.17.0",
-    "npm": "10.8.2"
+    "npm": "10.8.3"
   }
 }
