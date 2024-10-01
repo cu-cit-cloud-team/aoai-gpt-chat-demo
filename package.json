@@ -1,6 +1,6 @@
 {
   "name": "azure-openai-gpt4-chat",
-  "version": "0.39.2",
+  "version": "0.39.3",
   "description": "A Next.js chat app that uses Azure OpenAI GPT-4 to generate responses",
   "private": true,
   "engines": {
@@ -33,13 +33,13 @@
     "@fortawesome/free-brands-svg-icons": "6.6.0",
     "@fortawesome/free-solid-svg-icons": "6.6.0",
     "@fortawesome/react-fontawesome": "0.2.2",
-    "@langchain/community": "0.3.3",
-    "@langchain/core": "0.3.3",
-    "@langchain/openai": "0.3.2",
-    "@million/lint": "1.0.0-rc.84",
+    "@langchain/community": "0.3.4",
+    "@langchain/core": "0.3.5",
+    "@langchain/openai": "0.3.4",
+    "@million/lint": "1.0.0",
     "ai": "3.4.7",
     "axios": "1.7.7",
-    "babel-plugin-react-compiler": "0.0.0-experimental-b12479e-20240926",
+    "babel-plugin-react-compiler": "0.0.0-experimental-3feb7e4-20240930",
     "clsx": "2.1.1",
     "daisyui": "4.12.10",
     "dayjs": "1.11.13",
@@ -53,7 +53,7 @@
     "nanoid": "5.0.7",
     "next": "15.0.0-rc.0",
     "next-themes": "0.3.0",
-    "openai": "4.65.0",
+    "openai": "4.66.1",
     "react": "19.0.0-rc.0",
     "react-dom": "19.0.0-rc.0",
     "react-error-boundary": "4.0.13",
@@ -88,7 +88,7 @@
     "eslint": "8.57.1",
     "eslint-config-next": "15.0.0-rc.0",
     "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-react-compiler": "0.0.0-experimental-f444e11-20240926",
+    "eslint-plugin-react-compiler": "0.0.0-experimental-939a02d-20240930",
     "postcss": "8.4.47",
     "postcss-cli": "11.0.0",
     "prettier": "3.3.3",
@@ -104,7 +104,11 @@
     "lodash": "4.17.21"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
