@@ -36,10 +36,10 @@
     "@langchain/community": "0.3.4",
     "@langchain/core": "0.3.6",
     "@langchain/openai": "0.3.5",
-    "@million/lint": "1.0.0",
+    "@million/lint": "1.0.8",
     "ai": "3.4.8",
     "axios": "1.7.7",
-    "babel-plugin-react-compiler": "0.0.0-experimental-b4db8c3-20241001",
+    "babel-plugin-react-compiler": "0.0.0-experimental-27e0f40-20241002",
     "clsx": "2.1.1",
     "daisyui": "4.12.11",
     "dayjs": "1.11.13",
@@ -87,7 +87,7 @@
     "eslint": "8.57.1",
     "eslint-config-next": "15.0.0-rc.0",
     "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-react-compiler": "0.0.0-experimental-42acc6a-20241001",
+    "eslint-plugin-react-compiler": "0.0.0-experimental-1e98da5-20241002",
     "postcss": "8.4.47",
     "postcss-cli": "11.0.0",
     "prettier": "3.3.3",
@@ -103,11 +103,7 @@
     "lodash": "4.17.21"
   },
   "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
+    "production": [">0.2%", "not dead", "not op_mini all"],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
