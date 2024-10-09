@@ -34,18 +34,18 @@
     "@fortawesome/free-solid-svg-icons": "6.6.0",
     "@fortawesome/react-fontawesome": "0.2.2",
     "@langchain/community": "0.3.4",
-    "@langchain/core": "0.3.7",
+    "@langchain/core": "0.3.8",
     "@langchain/openai": "0.3.5",
     "@million/lint": "1.0.9",
     "ai": "3.4.9",
     "axios": "1.7.7",
     "babel-plugin-react-compiler": "0.0.0-experimental-58c2b1c-20241007",
     "clsx": "2.1.1",
-    "daisyui": "4.12.12",
+    "daisyui": "4.12.13",
     "dayjs": "1.11.13",
     "dexie": "4.0.8",
     "dexie-react-hooks": "1.1.7",
-    "gpt-tokenizer": "2.4.1",
+    "gpt-tokenizer": "2.5.0",
     "he": "1.2.0",
     "jotai": "2.10.0",
     "langchain": "0.3.2",
@@ -54,8 +54,8 @@
     "next": "15.0.0-rc.0",
     "next-themes": "0.3.0",
     "openai": "4.67.3",
-    "react": "19.0.0-rc.0",
-    "react-dom": "19.0.0-rc.0",
+    "react": "19.0.0-rc-ed966dac-20241007",
+    "react-dom": "19.0.0-rc-ed966dac-20241007",
     "react-error-boundary": "4.0.13",
     "react-markdown": "9.0.1",
     "react-syntax-highlighter": "15.5.0",
@@ -84,7 +84,7 @@
     "conventional-changelog-conventionalcommits": "8.0.0",
     "cssnano": "7.0.6",
     "cz-git": "1.10.1",
-    "eslint": "8.57.1",
+    "eslint": "9.12.0",
     "eslint-config-next": "15.0.0-rc.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-react-compiler": "0.0.0-experimental-4c9207a-20241007",
@@ -97,13 +97,17 @@
     "stylelint-config-standard": "36.0.1",
     "stylelint-config-standard-scss": "13.1.0",
     "tailwindcss": "3.4.13",
-    "typescript": "5.6.2"
+    "typescript": "5.6.3"
   },
   "peerDependencies": {
     "lodash": "4.17.21"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
