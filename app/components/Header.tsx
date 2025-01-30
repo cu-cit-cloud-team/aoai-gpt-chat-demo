@@ -140,9 +140,52 @@ export const Header = memo(
             </li>
           </ul>
         </div>
-        <div className="navbar-end">
-          <UserAvatar />
-        </div>
+        <a
+          className="text-sm leading-4 normal-case lg:text-xl"
+          href="https://github.com/cu-cit-cloud-team/azure-openai-gpt4-chat"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          GPT Chat Demo v{pkg.version}
+        </a>
+        <UpdateCheck />
+      </div>
+      <div className="hidden navbar-center lg:flex">
+        <ul className="menu menu-horizontal">
+          <li>
+            <details className="system-message-dropdown">
+              <summary>
+                <Suspense fallback={<div>Loading...</div>}>
+                  <FontAwesomeIcon icon={faRobot} />
+                </Suspense>
+                System
+              </summary>
+              <ul className="w-fit bg-base-200">
+                <li>
+                  <SystemMessage
+                    input={input}
+                    systemMessageRef={systemMessageRef}
+                  />
+                </li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <Parameters />
+          </li>
+          <li>
+            <ClearChatButton buttonText="Clear" isLoading={isLoading} />
+          </li>
+          <li>
+            <ExportChatButton buttonText="Export" isLoading={isLoading} />
+          </li>
+          <li>
+            <ThemeChanger />
+          </li>
+        </ul>
+      </div>
+      <div className="navbar-end">
+        <UserAvatar />
       </div>
     );
   }
