@@ -1,15 +1,19 @@
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAtomValue } from 'jotai';
-import PropTypes from 'prop-types';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { database } from '@/app/database/database.config';
 
-import { systemMessageAtom } from '@/app/components/SystemMessage';
+import { systemMessageAtom } from '@/app/page';
+
+interface ExportChatButtonProps {
+  buttonText?: string;
+  isLoading: boolean;
+}
 
 export const ExportChatButton = memo(
-  ({ buttonText = 'Export Chat', isLoading }) => {
+  ({ buttonText = 'Export Chat', isLoading }: ExportChatButtonProps) => {
     const systemMessage = useAtomValue(systemMessageAtom);
     const exportHandler = useCallback(
       async (event) => {
@@ -46,7 +50,7 @@ export const ExportChatButton = memo(
                 .reduce((res, key) => ((res[key] = message[key]), res), {})
             );
           });
-          console.log(systemMessage);
+          // console.log(systemMessage);
           sortedMessages.unshift({
             role: 'system',
             content: systemMessage,
@@ -61,6 +65,11 @@ export const ExportChatButton = memo(
       [systemMessage]
     );
 
+    const memoizedIcon = useMemo(
+      () => <FontAwesomeIcon icon={faDownload} />,
+      []
+    );
+
     return (
       <>
         <button
@@ -69,7 +78,7 @@ export const ExportChatButton = memo(
           disabled={isLoading}
           className={isLoading ? 'btn-disabled' : ''}
         >
-          <FontAwesomeIcon icon={faDownload} /> {buttonText}
+          {memoizedIcon} {buttonText}
         </button>
       </>
     );
@@ -77,9 +86,5 @@ export const ExportChatButton = memo(
 );
 
 ExportChatButton.displayName = 'ExportChatButton';
-ExportChatButton.propTypes = {
-  buttonText: PropTypes.string,
-  isLoading: PropTypes.bool.isRequired,
-};
 
 export default ExportChatButton;

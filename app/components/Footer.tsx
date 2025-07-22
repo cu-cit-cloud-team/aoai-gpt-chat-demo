@@ -1,8 +1,29 @@
 import clsx from 'clsx';
-import PropTypes from 'prop-types';
 import { memo, useEffect } from 'react';
 
 import { TokenCount } from '@/app/components/TokenCount';
+
+interface FooterProps {
+  formRef?: (...args: unknown[]) =>
+    | unknown
+    | {
+        current?: object;
+      };
+  handleInputChange(...args: unknown[]): unknown;
+  handleSubmit(...args: unknown[]): unknown;
+  input: string;
+  isLoading: boolean;
+  systemMessageRef?: (...args: unknown[]) =>
+    | unknown
+    | {
+        current?: object;
+      };
+  textAreaRef?: (...args: unknown[]) =>
+    | unknown
+    | {
+        current?: object;
+      };
+}
 
 export const Footer = memo(
   ({
@@ -13,7 +34,7 @@ export const Footer = memo(
     isLoading,
     systemMessageRef,
     textAreaRef,
-  }) => {
+  }: FooterProps) => {
     useEffect(() => {
       if (document?.activeElement !== systemMessageRef?.current && !isLoading) {
         textAreaRef?.current?.focus();
@@ -31,9 +52,8 @@ export const Footer = memo(
           <textarea
             autoFocus={true}
             className={clsx(
-              'w-full max-w-6xl p-2 overflow-x-hidden overflow-y-auto text-sm border border-gray-300 rounded shadow-xl min-h-14 h-14 lg:text-base lg:h-20 lg:min-h-20 max-h-75',
+              'bg-base-100 w-full max-w-6xl p-2 overflow-x-hidden overflow-y-auto text-sm border border-gray-300 rounded shadow-xl min-h-14 h-14 lg:text-base lg:h-20 lg:min-h-20 max-h-75',
               {
-                // biome-ignore lint/complexity/useLiteralKeys: <explanation>
                 'skeleton': isLoading,
               }
             )}
@@ -65,23 +85,5 @@ export const Footer = memo(
 );
 
 Footer.displayName = 'Footer';
-Footer.propTypes = {
-  formRef: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.shape({ current: PropTypes.object }),
-  ]),
-  handleInputChange: PropTypes.func.isRequired,
-  handleSubmit: PropTypes.func.isRequired,
-  input: PropTypes.string.isRequired,
-  isLoading: PropTypes.bool.isRequired,
-  systemMessageRef: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.shape({ current: PropTypes.object }),
-  ]),
-  textAreaRef: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.shape({ current: PropTypes.object }),
-  ]),
-};
 
 export default Footer;

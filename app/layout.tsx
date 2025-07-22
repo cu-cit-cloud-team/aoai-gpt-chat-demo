@@ -1,5 +1,6 @@
 import type React from 'react';
-import './globals.scss';
+
+import './globals.css';
 
 import { Providers } from '@/app/providers';
 
@@ -15,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body suppressHydrationWarning>
         <div className="page-wrapper">
           <Providers>{children}</Providers>
         </div>

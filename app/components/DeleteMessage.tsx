@@ -6,18 +6,29 @@ import { memo, useCallback } from 'react';
 
 import { database } from '@/app/database/database.config';
 
-export const DeleteMessage = memo(({ isUser, message }) => {
+// Memoized FontAwesomeIcon to prevent unnecessary re-renders
+const MemoizedFontAwesomeIcon = memo(FontAwesomeIcon);
+
+interface DeleteMessageProps {
+  isUser: boolean;
+  messageId: string;
+}
+
+export const DeleteMessage = memo(({
+  isUser,
+  messageId
+}: DeleteMessageProps) => {
   const buttonId = nanoid();
 
   const deleteMessage = useCallback(async () => {
     const deleteFromDb = async () => {
-      await database.messages.where('id').equals(message.id).delete();
+      await database.messages.where('id').equals(messageId).delete();
     };
     if (confirm('Are you sure you want to delete this message?')) {
       await deleteFromDb();
       window.location.reload();
     }
-  }, [message]);
+  }, [messageId]);
 
   return (
     <div
@@ -36,7 +47,7 @@ export const DeleteMessage = memo(({ isUser, message }) => {
           'btn-secondary text-secondary-content': !isUser,
         })}
       >
-        <FontAwesomeIcon icon={faTrash} />
+        <MemoizedFontAwesomeIcon icon={faTrash} />
       </button>
     </div>
   );

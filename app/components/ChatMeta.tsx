@@ -5,47 +5,68 @@ import dayjs from 'dayjs';
 import isToday from 'dayjs/plugin/isToday';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { atom, useAtom, useAtomValue } from 'jotai';
-import PropTypes from 'prop-types';
 import { memo, useEffect } from 'react';
 
-import { parametersAtom } from '@/app/components/Parameters';
-import { userMetaAtom } from '@/app/components/UserAvatar';
+import { parametersAtom, userMetaAtom } from '@/app/page';
+
+import { modelStringFromName } from '@/app/utils/models';
 
 dayjs.extend(isToday);
 dayjs.extend(relativeTime);
 
-const modelAtom = atom('gpt-4-turbo');
-const lastUpdatedStringAtom = atom('');
+interface ChatMetaProps {
+  index?: number;
+  isLoading?: boolean;
+  isUser?: boolean;
+  messageCreatedAt?: string | Date;
+  model?: string;
+  stop?(...args: unknown[]): unknown;
+  totalMessages?: number;
+}
 
 export const ChatMeta = memo(
-  ({ index, isLoading, isUser, message, stop, totalMessages }) => {
+  ({
+    index,
+    isLoading,
+    isUser,
+    messageCreatedAt,
+    model,
+    stop,
+    totalMessages,
+  }: ChatMetaProps) => {
+    const lastUpdatedStringAtom = atom('');
+    const modelAtom = atom(model);
+
     const parameters = useAtomValue(parametersAtom);
     const userMeta = useAtomValue(userMetaAtom);
 
     const [lastUpdatedString, setLastUpdatedString] = useAtom(
       lastUpdatedStringAtom
     );
+    const [modelInfo, setModelInfo] = useAtom(modelAtom);
 
     useEffect(() => {
-      setLastUpdatedString(dayjs(dayjs(message.createdAt)).from());
-    }, [message, setLastUpdatedString]);
-
-    const [model, setModel] = useAtom(modelAtom);
+      if (!modelInfo || model === undefined) {
+        setModelInfo(modelStringFromName(parameters.model));
+      } else {
+        setModelInfo(modelStringFromName(model));
+      }
+    }, [model, modelInfo, parameters.model, setModelInfo]);
 
     useEffect(() => {
-      setModel(parameters.model);
-    }, [parameters, setModel]);
+      setLastUpdatedString(dayjs(dayjs(messageCreatedAt)).from());
+    }, [messageCreatedAt, setLastUpdatedString]);
 
     useEffect(() => {
       const updateString = () => {
-        setLastUpdatedString(dayjs(dayjs(message.createdAt)).from());
+        setLastUpdatedString(dayjs(dayjs(messageCreatedAt)).from());
       };
       const clockInterval = setInterval(updateString, 10000);
 
       updateString();
 
       return () => clearInterval(clockInterval);
-    }, [message, setLastUpdatedString]);
+    }, [messageCreatedAt, setLastUpdatedString]);
 
     return (
       <>
@@ -53,13 +74,12 @@ export const ChatMeta = memo(
           className={clsx('cursor-default text-xs', {
             'tooltip-primary tooltip-right': isUser,
             'tooltip-secondary tooltip-left': !isUser,
-            // biome-ignore lint/complexity/useLiteralKeys: <explanation>
             'tooltip': !isLoading || index !== totalMessages,
           })}
           data-tip={
-            dayjs(message.createdAt).isToday()
-              ? dayjs(message.createdAt).format('hh:mm a')
-              : dayjs(message.createdAt).format('ddd MMM DD YYYY [at] h:mm a')
+            dayjs(messageCreatedAt).isToday()
+              ? dayjs(messageCreatedAt).format('hh:mm a')
+              : dayjs(messageCreatedAt).format('ddd MMM DD YYYY [at] h:mm a')
           }
         >
           {!isUser && index === totalMessages && isLoading ? (
@@ -75,17 +95,7 @@ export const ChatMeta = memo(
               <FontAwesomeIcon icon={faSpinner} spinPulse className="mr-2" />
             </>
           ) : null}
-          {isUser
-            ? `${userMeta?.name ?? 'User'}`
-            : `Azure OpenAI ${
-                model === 'gpt-35-turbo'
-                  ? 'GPT-3.5 Turbo (1106)'
-                  : model === 'gpt-4'
-                    ? 'GPT-4 (1106)'
-                    : model === 'gpt-4o'
-                      ? 'GPT-4o (2024-05-13)'
-                      : 'GPT-4 Turbo (2024-04-09)'
-              }`}
+          {isUser ? `${userMeta?.name ?? 'User'}` : `${modelInfo}`}
           {isUser || index !== totalMessages ? (
             <time>
               <span className="opacity-60">&nbsp;{lastUpdatedString}</span>
@@ -103,20 +113,5 @@ export const ChatMeta = memo(
 );
 
 ChatMeta.displayName = 'ChatMeta';
-ChatMeta.propTypes = {
-  isLoading: PropTypes.bool,
-  index: PropTypes.number,
-  totalMessages: PropTypes.number,
-  isUser: PropTypes.bool,
-  message: PropTypes.shape({
-    id: PropTypes.string,
-    content: PropTypes.string,
-    createdAt: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.instanceOf(Date),
-    ]),
-  }),
-  stop: PropTypes.func,
-};
 
 export default ChatMeta;

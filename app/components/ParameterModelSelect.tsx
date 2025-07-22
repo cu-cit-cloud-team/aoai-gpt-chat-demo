@@ -1,9 +1,9 @@
 import { useAtom } from 'jotai';
 import { memo, useCallback } from 'react';
 
-import { database } from '@/app/database/database.config';
+import { parametersAtom } from '@/app/page';
 
-import { parametersAtom } from '@/app/components/Parameters';
+import { models } from '@/app/utils/models';
 
 export const ParameterModelSelect = memo(() => {
   const [parameters, setParameters] = useAtom(parametersAtom);
@@ -12,16 +12,11 @@ export const ParameterModelSelect = memo(() => {
     async (event) => {
       if (
         confirm(
-          'Changing the model will reset the chat history. Are you sure you want to continue?'
+          `Are you sure you want to switch the model to ${event.target.value}?`
         )
       ) {
         setParameters({ ...parameters, model: event.target.value });
-        try {
-          await database.messages.clear();
-          window.location.reload();
-        } catch (error) {
-          console.error(error);
-        }
+        window.location.reload();
       } else {
         event.target.value = parameters.model;
       }
@@ -34,13 +29,15 @@ export const ParameterModelSelect = memo(() => {
       <span className="px-0 text-sm font-normal text-left">model:</span>
       <select
         className="w-full max-w-xs text-xs select select-sm select-bordered"
+        id="model"
         value={parameters.model}
         onChange={modelChangeHandler}
       >
-        <option value="gpt-35-turbo">gpt-35-turbo (1106)</option>
-        <option value="gpt-4">gpt-4 (1106)</option>
-        <option value="gpt-4-turbo">gpt-4-turbo (2024-04-09)</option>
-        <option value="gpt-4o">gpt-4o (2024-05-13)</option>
+        {models.map((model) => (
+          <option key={model.name} value={model.name}>
+            {model.displayName}
+          </option>
+        ))}
       </select>
     </>
   );

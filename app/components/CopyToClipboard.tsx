@@ -5,11 +5,22 @@ import { atom, useAtom, useAtomValue } from 'jotai';
 import { nanoid } from 'nanoid';
 import { memo, useCallback } from 'react';
 
-const isCopiedAtom = atom(false);
-const inputIdAtom = atom(() => nanoid());
-const buttonIdAtom = atom(() => nanoid());
+interface CopyToClipboardProps {
+  isUser: boolean;
+  textToCopy: string;
+}
 
-export const CopyToClipboard = memo(({ isUser, textToCopy }) => {
+export const CopyToClipboard = memo(({
+  isUser,
+  textToCopy
+}: CopyToClipboardProps) => {
+  const inputIdKey = nanoid();
+  const buttonIdKey = nanoid();
+
+  const isCopiedAtom = atom(false);
+  const inputIdAtom = atom(inputIdKey);
+  const buttonIdAtom = atom(buttonIdKey);
+
   const [isCopied, setIsCopied] = useAtom(isCopiedAtom);
   const inputId = useAtomValue(inputIdAtom);
   const buttonId = useAtomValue(buttonIdAtom);
@@ -41,7 +52,7 @@ export const CopyToClipboard = memo(({ isUser, textToCopy }) => {
         'float-left -ml-4 tooltip-right tooltip-primary': isUser,
         'float-right -mr-4 tooltip-left tooltip-secondary': !isUser,
       })}
-      data-tip={'Copy to clipboard'}
+      data-tip={isCopied ? 'Copied' : 'Copy to clipboard'}
     >
       <input
         key={inputId}
@@ -61,12 +72,11 @@ export const CopyToClipboard = memo(({ isUser, textToCopy }) => {
           'btn-secondary text-secondary-content': !isUser,
         })}
       >
-        <FontAwesomeIcon
-          icon={isCopied ? faCheck : faCopy}
-          className={clsx('', {
-            'text-green-600': isCopied,
-          })}
-        />
+        {isCopied ? (
+          <FontAwesomeIcon icon={faCheck} className="text-green-600" />
+        ) : (
+          <FontAwesomeIcon icon={faCopy} />
+        )}
       </button>
     </div>
   );

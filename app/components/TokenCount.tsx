@@ -1,28 +1,25 @@
 import clsx from 'clsx';
 import { atom, useAtom, useAtomValue } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
-import PropTypes from 'prop-types';
 import { memo, useEffect, useMemo } from 'react';
 
+import { modelFromName } from '@/app/utils/models';
 import { getTokenCount } from '@/app/utils/tokens';
 
-import { parametersAtom } from '@/app/components/Parameters';
+import { parametersAtom, systemMessageMaxTokens, tokensAtom } from '@/app/page';
 
-const systemMessageMaxTokens = 400;
-const inputTokensAtom = atom(0);
-const systemMessageTokensAtom = atom(0);
-const remainingTokensAtom = atom(16384);
-const remainingSystemTokensAtom = atom(systemMessageMaxTokens);
-export const tokensAtom = atomWithStorage('tokens', {
-  input: 0,
-  maximum: 16384,
-  remaining: 16384,
-  systemMessage: 0,
-  systemMessageRemaining: systemMessageMaxTokens,
-});
+interface TokenCountProps {
+  input?: string;
+  systemMessage: string;
+  display?: 'input' | 'systemMessage';
+}
 
 export const TokenCount = memo(
-  ({ input = '', systemMessage, display = 'input' }) => {
+  ({ input = '', systemMessage, display = 'input' }: TokenCountProps) => {
+    const inputTokensAtom = atom(0);
+    const systemMessageTokensAtom = atom(0);
+    const remainingTokensAtom = atom(16384);
+    const remainingSystemTokensAtom = atom(systemMessageMaxTokens);
+
     const [inputTokens, setInputTokens] = useAtom(inputTokensAtom);
     const [systemMessageTokens, setSystemMessageTokens] = useAtom(
       systemMessageTokensAtom
@@ -32,7 +29,8 @@ export const TokenCount = memo(
       remainingSystemTokensAtom
     );
     const parameters = useAtomValue(parametersAtom);
-    const maxTokens = parameters.model.includes('gpt-4') ? 128000 : 16384;
+    const model = modelFromName(parameters.model);
+    const maxTokens = model?.maxInputTokens || 16384;
     const [tokens, setTokens] = useAtom(tokensAtom);
 
     useEffect(() => {
@@ -53,10 +51,16 @@ export const TokenCount = memo(
     ]);
 
     const updateSystemMessageCount = useMemo(() => {
+      if (!systemMessage) {
+        return 0;
+      }
       return getTokenCount(systemMessage);
     }, [systemMessage]);
 
     const updateInputCount = useMemo(() => {
+      if (!input) {
+        return 0;
+      }
       return getTokenCount(input);
     }, [input]);
 
@@ -107,11 +111,5 @@ export const TokenCount = memo(
 );
 
 TokenCount.displayName = 'TokenCount';
-
-TokenCount.propTypes = {
-  input: PropTypes.string,
-  systemMessage: PropTypes.string.isRequired,
-  display: PropTypes.oneOf(['input', 'systemMessage']),
-};
 
 export default TokenCount;

@@ -3,18 +3,17 @@ import {
   faRightFromBracket,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import axios from 'axios';
 import clsx from 'clsx';
 import { atom, useAtom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
-import { memo, useEffect } from 'react';
+import { memo, useCallback, useEffect, useMemo } from 'react';
 
-const emailAtom = atom('');
-const nameAtom = atom('');
-const hasDataAtom = atom(false);
-export const userMetaAtom = atomWithStorage('userMeta', {});
+import { userMetaAtom } from '@/app/page';
 
 export const UserAvatar = memo(() => {
+  const emailAtom = atom('');
+  const nameAtom = atom('');
+  const hasDataAtom = atom(false);
+
   const [email, setEmail] = useAtom(emailAtom);
   const [name, setName] = useAtom(nameAtom);
   const [hasData, setHasData] = useAtom(hasDataAtom);
@@ -26,15 +25,15 @@ export const UserAvatar = memo(() => {
       return;
     }
     const getUserMeta = async () => {
-      await axios
-        .get('/.auth/me', {
-          headers: {
-            'Cache-Control': 'no-cache',
-            Pragma: 'no-cache',
-            Expires: '0',
-          },
-        })
-        .then((response) => {
+      await fetch('/.auth/me', {
+        headers: {
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      })
+        .then(async (resp) => {
+          const response = await resp.json();
           const email = response?.data[0]?.user_claims.find(
             (item) => item.typ === 'preferred_username'
           ).val;
@@ -86,7 +85,7 @@ export const UserAvatar = memo(() => {
     }
   }, [setEmail, setHasData, setName, userMeta]);
 
-  const formatName = (name) => {
+  const formatName = useCallback((name) => {
     if (!name) {
       return;
     }
@@ -99,13 +98,22 @@ export const UserAvatar = memo(() => {
       returnName = `${firstInitial}${lastInitial}`;
     }
     return returnName;
-  };
+  }, []);
+
+  const icon = useMemo(() => {
+    return hasData ? (
+      formatName(name)
+    ) : (
+      <FontAwesomeIcon size="2x" icon={faCircleUser} />
+    );
+  }, [formatName, hasData, name]);
 
   return (
     <>
       <span className="hidden mr-2 text-sm lg:flex">{email}</span>
       <div className="dropdown dropdown-end bg-base-300">
-        <label tabIndex={0} className="avatar placeholder">
+        {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+        <label tabIndex={0} className="avatar avatar-placeholder">
           <div
             className={clsx(
               'rounded-full bg-primary text-primary-content cursor-pointer',
@@ -115,11 +123,7 @@ export const UserAvatar = memo(() => {
               }
             )}
           >
-            {hasData ? (
-              formatName(name)
-            ) : (
-              <FontAwesomeIcon size="2x" icon={faCircleUser} />
-            )}
+            {icon}
           </div>
         </label>
         {hasData ? (

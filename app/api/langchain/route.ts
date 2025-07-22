@@ -1,8 +1,10 @@
-import { PromptTemplate } from '@langchain/core/prompts';
-import { ChatOpenAI } from '@langchain/openai';
-import { StreamingTextResponse } from 'ai';
-import type { Message as ChatMessage } from 'ai';
-import { HttpResponseOutputParser } from 'langchain/output_parsers';
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+} from '@langchain/core/messages';
+import { AzureChatOpenAI } from '@langchain/openai';
+import { LangChainAdapter } from 'ai';
 
 // destructure env vars we need
 const {
@@ -12,18 +14,19 @@ const {
   AZURE_OPENAI_GPT35_DEPLOYMENT,
   AZURE_OPENAI_GPT4_DEPLOYMENT,
   AZURE_OPENAI_GPT4O_DEPLOYMENT,
+  AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT,
   AZURE_OPENAI_API_VERSION,
 } = process.env;
 
 // make sure env vars are set
-if (
-  !AZURE_OPENAI_API_KEY ||
-  !AZURE_OPENAI_BASE_PATH ||
-  !AZURE_OPENAI_MODEL_DEPLOYMENT ||
-  !AZURE_OPENAI_API_VERSION
-) {
-  throw new Error('AZURE_OPENAI_API_KEY is missing from the environment.');
-}
+// if (
+//   !AZURE_OPENAI_API_KEY ||
+//   !AZURE_OPENAI_BASE_PATH ||
+//   !AZURE_OPENAI_MODEL_DEPLOYMENT ||
+//   !AZURE_OPENAI_API_VERSION
+// ) {
+//   throw new Error('AZURE_OPENAI_API_KEY is missing from the environment.');
+// }
 
 // tell next.js to use the edge runtime
 export const runtime = 'edge';
@@ -36,21 +39,9 @@ const defaults = {
   frequency_penalty: 0, // -2.0 to 2.0
   presence_penalty: 0, // -2.0 to 2.0
   max_tokens: 1024,
-  model: 'gpt-4-turbo', // currently gpt-4-turbo, gpt-4, or gpt-35-turbo
+  model: 'gpt-4o', // currently gpt-4o, gpt-4-turbo, gpt-4, or gpt-35-turbo
   user: 'Cloud Team GPT Chat User',
 };
-
-const formatMessage = (message: ChatMessage) => {
-  return `${message.role}: ${message.content}`;
-};
-
-const chatTemplate = (systemMessage) => `${systemMessage}
-
-Current conversation:
-{chat_history}
-
-User: {input}
-AI:`;
 
 // main route handler
 export async function POST(req: Request) {
@@ -85,11 +76,6 @@ export async function POST(req: Request) {
   const user = urlParams.get('user') || defaults.user;
   const max_tokens = model === 'gpt-35-turbo' ? 2048 : defaults.max_tokens;
 
-  const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
-  const currentMessageContent = messages[messages.length - 1].content;
-
-  const prompt = PromptTemplate.fromTemplate(chatTemplate(systemMessage));
-
   // set up chat config
   const chatConfig = {
     temperature,
@@ -107,11 +93,15 @@ export async function POST(req: Request) {
       ? AZURE_OPENAI_GPT35_DEPLOYMENT
       : model === 'gpt-4' && AZURE_OPENAI_GPT4_DEPLOYMENT
         ? AZURE_OPENAI_GPT4_DEPLOYMENT
-        : model === 'gpt-4o' && AZURE_OPENAI_GPT4O_DEPLOYMENT
-          ? AZURE_OPENAI_GPT4O_DEPLOYMENT
-          : AZURE_OPENAI_MODEL_DEPLOYMENT;
+        : model === 'gpt-4-turbo' && AZURE_OPENAI_MODEL_DEPLOYMENT
+          ? AZURE_OPENAI_MODEL_DEPLOYMENT
+          : model === 'gpt-4o' && AZURE_OPENAI_GPT4O_DEPLOYMENT
+            ? AZURE_OPENAI_GPT4O_DEPLOYMENT
+            : model === 'gpt-4o-mini' && AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT
+              ? AZURE_OPENAI_GPT4O_MINI_DEPLOYMENT
+              : AZURE_OPENAI_GPT4O_DEPLOYMENT;
 
-  const chatModel = new ChatOpenAI({
+  const chatModel = new AzureChatOpenAI({
     azureOpenAIApiKey: AZURE_OPENAI_API_KEY,
     azureOpenAIBasePath: `${AZURE_OPENAI_BASE_PATH}openai/deployments/`,
     azureOpenAIApiVersion: AZURE_OPENAI_API_VERSION,
@@ -119,14 +109,30 @@ export async function POST(req: Request) {
     ...chatConfig,
   });
 
-  const outputParser = new HttpResponseOutputParser();
+  // put messages into temp variable
+  let chatMessages = [...messages];
 
-  const chain = prompt.pipe(chatModel).pipe(outputParser);
+  // helper function to check if system prompt is already in messages
+  const hasSystemPrompt = messages.some((message) => message.role === 'system');
 
-  const stream = await chain.stream({
-    chat_history: formattedPreviousMessages.join('\n'),
-    input: currentMessageContent,
-  });
+  if (!hasSystemPrompt) {
+    // add system prompt to messages if not already there and not an o1 model
+    chatMessages = [new SystemMessage(systemMessage)];
+  }
 
-  return new StreamingTextResponse(stream);
+  // add user and assistant messages to chatMessages array with LangChain helpers
+  for (const message of messages) {
+    if (message.role === 'user') {
+      chatMessages.push(new HumanMessage(message.content));
+    }
+    if (message.role === 'assistant') {
+      chatMessages.push(new AIMessage(message.content));
+    }
+  }
+
+  // get the stream of messages
+  const stream = await chatModel.stream(chatMessages);
+
+  // return messages stream
+  return LangChainAdapter.toDataStreamResponse(stream);
 }

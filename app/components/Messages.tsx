@@ -1,11 +1,20 @@
-import { nanoid } from 'nanoid';
-import PropTypes from 'prop-types';
 import { memo, useEffect, useRef } from 'react';
+import type React from 'react';
 
 import { ChatBubble } from '@/app/components/ChatBubble';
 
+const MemoizedChatBubble = memo(ChatBubble);
+
+interface MessagesProps {
+  isLoading: boolean;
+  messages: Array<Record<string, unknown>>;
+  reload(...args: unknown[]): unknown;
+  stop(...args: unknown[]): unknown;
+  textAreaRef: React.RefObject<HTMLTextAreaElement>;
+}
+
 export const Messages = memo(
-  ({ isLoading, messages, reload, stop, textAreaRef }) => {
+  ({ isLoading, messages, reload, stop, textAreaRef }): MessagesProps => {
     const messagesRef = useRef(null);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: scroll to bottom fix
@@ -39,12 +48,15 @@ export const Messages = memo(
           {messages.length > 0
             ? messages.map((m, idx) => {
                 return (
-                  <ChatBubble
-                    key={nanoid()}
+                  <MemoizedChatBubble
+                    key={m.id}
                     index={idx}
                     isLoading={isLoading}
                     isUser={m.role === 'user'}
-                    message={m}
+                    messageCreatedAt={m.createdAt}
+                    messageContent={m.content}
+                    messageId={m.id}
+                    model={m.model}
                     reload={reload}
                     stop={stop}
                     totalMessages={messages.length - 1}
@@ -59,15 +71,5 @@ export const Messages = memo(
 );
 
 Messages.displayName = 'Messages';
-Messages.propTypes = {
-  isLoading: PropTypes.bool.isRequired,
-  messages: PropTypes.arrayOf(PropTypes.object).isRequired,
-  reload: PropTypes.func.isRequired,
-  savedMessages: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.object),
-    PropTypes.instanceOf(null),
-  ]).isRequired,
-  stop: PropTypes.func.isRequired,
-};
 
 export default Messages;

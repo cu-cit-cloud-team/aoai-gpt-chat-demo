@@ -2,32 +2,103 @@ import { faRobot, faSpinner, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import clsx from 'clsx';
 import { useAtomValue } from 'jotai';
-import PropTypes from 'prop-types';
-import { memo } from 'react';
+import markdownToTxt from 'markdown-to-txt';
+import { nanoid } from 'nanoid';
+import { memo, useMemo } from 'react';
 import Markdown from 'react-markdown';
 import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter';
+import rehypeKatex from 'rehype-katex';
+import rehypeSanitize from 'rehype-sanitize';
+import rehypeStringify from 'rehype-stringify';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
 
 import { ChatMeta } from '@/app/components/ChatMeta';
 import { CopyToClipboard } from '@/app/components/CopyToClipboard';
 import { DeleteMessage } from '@/app/components/DeleteMessage';
 import { ReloadMessage } from '@/app/components/ReloadMessage';
 
-import { markdownToText } from '@/app/utils/markdownToText';
+// import { markdownToText } from '@/app/utils/markdownToText';
 
-import { editorThemeAtom } from '@/app/components/ThemeChanger';
+import { editorThemeAtom } from '@/app/page';
+
+interface ChatBubbleProps {
+  index?: number;
+  isLoading?: boolean;
+  isUser?: boolean;
+  messageContent?: string;
+  messageCreatedAt?: string | Date;
+  messageId?: string;
+  model?: string;
+  reload?(...args: unknown[]): unknown;
+  stop?(...args: unknown[]): unknown;
+  totalMessages?: number;
+}
+
+const Pre = ({ children }) => {
+  return (
+    <pre className="code-pre">
+      <CopyToClipboard key={nanoid()} textToCopy={children.props.children} />
+      {children}
+    </pre>
+  );
+};
+
+Pre.displayName = 'Pre';
 
 export const ChatBubble = memo(
-  ({ index, isLoading, isUser, message, reload, stop, totalMessages }) => {
+  ({
+    index,
+    isLoading,
+    isUser,
+    messageContent,
+    messageCreatedAt,
+    messageId,
+    model,
+    reload,
+    stop,
+    totalMessages,
+  }: ChatBubbleProps) => {
     const editorTheme = useAtomValue(editorThemeAtom);
+    const copyToClipBoardKey = nanoid();
 
-    const Pre = ({ children }) => {
-      return (
-        <pre className="code-pre">
-          <CopyToClipboard textToCopy={children.props.children} />
-          {children}
-        </pre>
+    const rehypePlugins = useMemo(
+      () => [rehypeKatex, rehypeSanitize, rehypeStringify],
+      []
+    );
+
+    const remarkPlugins = useMemo(
+      () => [remarkGfm, remarkMath, remarkParse, remarkRehype],
+      []
+    );
+
+    const chatBubbleUserIcon = useMemo(() => {
+      return isUser ? (
+        <FontAwesomeIcon
+          className="chat-avatar-icon"
+          size="2x"
+          icon={faUser}
+          fixedWidth
+        />
+      ) : isLoading && index === totalMessages ? (
+        <FontAwesomeIcon
+          className="chat-avatar-icon"
+          size="2x"
+          icon={faSpinner}
+          spinPulse={true}
+          fixedWidth
+        />
+      ) : (
+        <FontAwesomeIcon
+          className="chat-avatar-icon"
+          size="2x"
+          icon={faRobot}
+          fixedWidth
+        />
       );
-    };
+    }, [index, isLoading, isUser, totalMessages]);
 
     return (
       <div
@@ -43,19 +114,7 @@ export const ChatBubble = memo(
               'bg-secondary text-secondary-content': !isUser,
             })}
           >
-            <FontAwesomeIcon
-              className="chat-avatar-icon"
-              size="2x"
-              icon={
-                isUser
-                  ? faUser
-                  : isLoading && index === totalMessages
-                    ? faSpinner
-                    : faRobot
-              }
-              spinPulse={!isUser && isLoading && index === totalMessages}
-              fixedWidth
-            />
+            {chatBubbleUserIcon}
           </div>
         </div>
         <div
@@ -67,20 +126,23 @@ export const ChatBubble = memo(
           {(isUser || !isLoading || index !== totalMessages) && (
             <>
               <CopyToClipboard
+                key={copyToClipBoardKey}
                 isUser={isUser}
-                textToCopy={markdownToText(message.content)}
+                textToCopy={markdownToTxt(messageContent)}
               />
-              <DeleteMessage isUser={isUser} message={message} />
+              <DeleteMessage isUser={isUser} messageId={messageId} />
               {index === totalMessages ? (
                 <ReloadMessage
                   isUser={isUser}
                   reload={reload}
-                  message={message}
+                  messageId={messageId}
                 />
               ) : null}
             </>
           )}
           <Markdown
+            rehypePlugins={rehypePlugins}
+            remarkPlugins={remarkPlugins}
             components={{
               pre: Pre,
               code(props) {
@@ -109,12 +171,11 @@ export const ChatBubble = memo(
               },
             }}
           >
-            {message.content.replace(/\n/g, '  \n')}
+            {messageContent.replace(/\n/g, '  \n')}
           </Markdown>
         </div>
         <div
           className={clsx('chat-footer', {
-            // biome-ignore lint/complexity/useLiteralKeys: <explanation>
             'bot': !isUser,
           })}
         >
@@ -122,7 +183,8 @@ export const ChatBubble = memo(
             index={index}
             isLoading={isLoading}
             isUser={isUser}
-            message={message}
+            model={model}
+            messageCreatedAt={messageCreatedAt}
             stop={stop}
             totalMessages={totalMessages}
           />
@@ -133,14 +195,5 @@ export const ChatBubble = memo(
 );
 
 ChatBubble.displayName = 'ChatBubble';
-ChatBubble.propTypes = {
-  index: PropTypes.number,
-  isLoading: PropTypes.bool,
-  isUser: PropTypes.bool,
-  message: PropTypes.object,
-  reload: PropTypes.func,
-  stop: PropTypes.func,
-  totalMessages: PropTypes.number,
-};
 
 export default ChatBubble;

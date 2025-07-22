@@ -1,11 +1,10 @@
 'use client';
 
 import { useChat } from 'ai/react';
-import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAtomValue } from 'jotai';
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { atomWithStorage } from 'jotai/utils';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { Footer } from '@/app/components/Footer';
@@ -14,11 +13,38 @@ import { Messages } from '@/app/components/Messages';
 
 import { database } from '@/app/database/database.config';
 
-import { parametersAtom } from '@/app/components/Parameters';
-import { systemMessageAtom } from '@/app/components/SystemMessage';
-import { userMetaAtom } from '@/app/components/UserAvatar';
+import { getEditorTheme } from '@/app/utils/themes';
 
-dayjs.extend(timezone);
+export const editorThemeAtom = atomWithStorage(
+  'editorTheme',
+  getEditorTheme('dark')
+);
+export const themeAtom = atomWithStorage('theme', 'dark');
+
+export const systemMessageAtom = atomWithStorage(
+  'systemMessage',
+  'You are a helpful AI assistant.'
+);
+
+export const systemMessageMaxTokens = 4096;
+
+export const parametersAtom = atomWithStorage('parameters', {
+  model: 'gpt-4o',
+  temperature: '1',
+  top_p: '1',
+  frequency_penalty: '0',
+  presence_penalty: '0',
+});
+
+export const tokensAtom = atomWithStorage('tokens', {
+  input: 0,
+  maximum: 16384,
+  remaining: 16384,
+  systemMessage: 0,
+  systemMessageRemaining: systemMessageMaxTokens,
+});
+
+export const userMetaAtom = atomWithStorage('userMeta', {});
 
 export const App = () => {
   const systemMessageRef = useRef<HTMLTextAreaElement>(null);
@@ -30,11 +56,11 @@ export const App = () => {
   const userMeta = useAtomValue(userMetaAtom);
 
   const savedMessages = useLiveQuery(async () => {
-    let messages = await database.messages.toArray();
-    messages = messages.sort(
-      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+    const messages = await database.messages.toArray();
+    return messages.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
-    return messages;
   }, [database.messages]);
 
   const handleChatError = useCallback((error) => {
@@ -42,9 +68,36 @@ export const App = () => {
     // throw error;
   }, []);
 
-  const addMessage = useCallback(async (message) => {
-    await database.messages.put(message);
-  }, []);
+  const addMessage = useCallback(
+    async (message) => {
+      await database.messages.put({
+        ...message,
+        model: parameters.model,
+      });
+    },
+    [parameters.model]
+  );
+
+  const apiUrl = useMemo(
+    () =>
+      `/api/chat?systemMessage=${encodeURIComponent(
+        systemMessage
+      )}&temperature=${encodeURIComponent(
+        parameters.temperature
+      )}&top_p=${encodeURIComponent(
+        parameters.top_p
+      )}&frequency_penalty=${encodeURIComponent(
+        parameters.frequency_penalty
+      )}&presence_penalty=${encodeURIComponent(
+        parameters.presence_penalty
+      )}&model=${encodeURIComponent(parameters.model)}`,
+    [parameters, systemMessage]
+  );
+
+  const userId = useMemo(
+    () => (userMeta?.email ? btoa(userMeta?.email) : undefined),
+    [userMeta]
+  );
 
   const {
     handleInputChange,
@@ -55,27 +108,41 @@ export const App = () => {
     reload,
     stop,
   } = useChat({
-    api: `/api/chat?systemMessage=${encodeURIComponent(
-      systemMessage
-    )}&temperature=${encodeURIComponent(
-      parameters.temperature
-    )}&top_p=${encodeURIComponent(
-      parameters.top_p
-    )}&frequency_penalty=${encodeURIComponent(
-      parameters.frequency_penalty
-    )}&presence_penalty=${encodeURIComponent(
-      parameters.presence_penalty
-    )}&model=${encodeURIComponent(parameters.model)}`,
-    id: userMeta?.email ? btoa(userMeta?.email) : undefined,
+    api: apiUrl,
+    id: userId,
     initialMessages: savedMessages,
     onError: handleChatError,
     onFinish: addMessage,
   });
 
+  const handleInputChangeCb = useCallback(
+    (event) => {
+      handleInputChange(event);
+    },
+    [handleInputChange]
+  );
+
+  const handleSubmitCb = useCallback(
+    (event) => {
+      handleSubmit(event);
+    },
+    [handleSubmit]
+  );
+
+  const reloadCb = useCallback(() => {
+    reload();
+  }, [reload]);
+
+  const stopCb = useCallback(() => {
+    stop();
+  }, [stop]);
+
+  const memoizedMessages = useMemo(() => messages, [messages]);
+
   // update indexedDB when messages changes
   useEffect(() => {
     if (savedMessages && savedMessages?.length !== messages?.length) {
-      if (messages[messages.length - 1].role === 'user' || !isLoading) {
+      if (messages[messages.length - 1]?.role === 'user' || !isLoading) {
         addMessage(messages[messages.length - 1]);
       }
     }
@@ -173,15 +240,15 @@ export const App = () => {
         />
         <Messages
           isLoading={isLoading}
-          messages={messages}
-          reload={reload}
-          stop={stop}
+          messages={memoizedMessages}
+          reload={reloadCb}
+          stop={stopCb}
           textAreaRef={textAreaRef}
         />
         <Footer
           formRef={formRef}
-          handleInputChange={handleInputChange}
-          handleSubmit={handleSubmit}
+          handleInputChange={handleInputChangeCb}
+          handleSubmit={handleSubmitCb}
           input={input}
           isLoading={isLoading}
           systemMessageRef={systemMessageRef}
